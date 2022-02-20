@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/df-mc/dragonfly/server"
 	"github.com/pkg/errors"
 )
 
