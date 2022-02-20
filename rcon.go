@@ -94,6 +94,7 @@ func (r *RCON) acceptConnection(conn net.Conn, srv *server.Server) {
 	for {
 		if t := srv.Uptime(); t == 0 {
 			log.Printf("RCON shutdown 2")
+			_ = conn.Close()
 			break
 		}
 
