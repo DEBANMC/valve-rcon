@@ -8,6 +8,8 @@ import (
 	"net"
 	"strings"
 	"syscall"
+
+	"github.com/df-mc/dragonfly/server"
 )
 
 // RCON implementation based on: https://developer.valvesoftware.com/wiki/Source_RCON_Protocol
@@ -64,7 +66,7 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 			log.Printf("RCON shutdown")
 			break
 		}
-		
+
 		conn, err := l.Accept()
 		if err != nil {
 			log.Printf("could not accept connection, error %v\n", err)
@@ -82,6 +84,8 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 		log.Printf("new connection from %s\n", conn.RemoteAddr().String())
 		go r.acceptConnection(conn)
 	}
+
+	return nil
 }
 
 func (r *RCON) acceptConnection(conn net.Conn) {
