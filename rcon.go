@@ -50,7 +50,7 @@ func (r *RCON) addressInBanList(addr string) bool {
 	return false
 }
 
-func (r *RCON) ListenAndServe() error {
+func (r *RCON) ListenAndServe(srv *server.Server) error {
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", r.host, r.port))
 	if err != nil {
 		return err
@@ -60,6 +60,11 @@ func (r *RCON) ListenAndServe() error {
 	log.Printf("starting RCON server on port %d\n", r.port)
 
 	for {
+		if t := srv.Uptime(); t == 0 {
+			log.Printf("RCON shutdown")
+			break
+		}
+		
 		conn, err := l.Accept()
 		if err != nil {
 			log.Printf("could not accept connection, error %v\n", err)
