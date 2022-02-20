@@ -69,8 +69,9 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 
 		conn, err := r.listener.Accept()
 		if err != nil {
-			log.Printf("could not accept connection, error %v\n", err)
-			continue
+			//log.Printf("could not accept connection, error %v\n", err)
+			log.Printf("RCON close")
+			break
 		}
 
 		ip := addressWithoutPort(conn.RemoteAddr().String())
@@ -84,6 +85,8 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 		log.Printf("new connection from %s\n", conn.RemoteAddr().String())
 		go r.acceptConnection(conn, srv)
 	}
+
+	return nil
 }
 
 func (r *RCON) acceptConnection(conn net.Conn, srv *server.Server) {
