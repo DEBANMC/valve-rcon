@@ -62,7 +62,9 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 	log.Printf("starting RCON server on port %d\n", r.port)
 
 	for {
-		if t := srv.Uptime(); t == 0 {
+		t := srv.Uptime()
+		log.Println(t)
+		if t == 0 {
 			log.Printf("RCON shutdown 1")
 			break
 		}
