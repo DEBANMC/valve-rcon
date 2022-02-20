@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
+	"os/signal"
 	"strings"
 	"syscall"
 
@@ -24,6 +26,7 @@ type RCON struct {
 	password       string
 	commandHandler func(command string, client Client)
 	banList        []string
+	listener       net.Listener
 }
 
 func NewRCON(host string, port int, password string) *RCON {
@@ -57,19 +60,14 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 	if err != nil {
 		return err
 	}
-	defer l.Close()
+	r.listener = l
+	defer r.listener.Close()
 
 	log.Printf("starting RCON server on port %d\n", r.port)
 
 	for {
-		t := srv.Uptime()
-		log.Println(t)
-		if t == 0 {
-			log.Printf("RCON shutdown 1")
-			break
-		}
 
-		conn, err := l.Accept()
+		conn, err := r.listener.Accept()
 		if err != nil {
 			log.Printf("could not accept connection, error %v\n", err)
 			continue
@@ -86,19 +84,12 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 		log.Printf("new connection from %s\n", conn.RemoteAddr().String())
 		go r.acceptConnection(conn, srv)
 	}
-
-	return nil
 }
 
 func (r *RCON) acceptConnection(conn net.Conn, srv *server.Server) {
 	authenticated := false
 
 	for {
-		if t := srv.Uptime(); t == 0 {
-			log.Printf("RCON shutdown 2")
-			_ = conn.Close()
-			break
-		}
 
 		p, err := ParsePacket(conn)
 		if errors.Is(err, io.EOF) ||
@@ -167,4 +158,13 @@ func (r *RCON) acceptConnection(conn net.Conn, srv *server.Server) {
 func addressWithoutPort(addr string) string {
 	parts := strings.Split(addr, ":")
 	return parts[0]
+}
+
+func (server *RCON) CloseOnProgramEnd() {
+	c := make(chan os.Signal, 2)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-c
+		server.listener.Close()
+	}()
 }
