@@ -63,7 +63,7 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 
 	for {
 		if t := srv.Uptime(); t == 0 {
-			log.Printf("RCON shutdown")
+			log.Printf("RCON shutdown 1")
 			break
 		}
 
@@ -82,16 +82,21 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 		}
 
 		log.Printf("new connection from %s\n", conn.RemoteAddr().String())
-		go r.acceptConnection(conn)
+		go r.acceptConnection(conn, srv)
 	}
 
 	return nil
 }
 
-func (r *RCON) acceptConnection(conn net.Conn) {
+func (r *RCON) acceptConnection(conn net.Conn, srv *server.Server) {
 	authenticated := false
 
 	for {
+		if t := srv.Uptime(); t == 0 {
+			log.Printf("RCON shutdown 2")
+			break
+		}
+
 		p, err := ParsePacket(conn)
 		if errors.Is(err, io.EOF) ||
 			errors.Is(err, syscall.WSAECONNRESET) {
