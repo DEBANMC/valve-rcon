@@ -1,4 +1,4 @@
-module github.com/crossworth/valve-rcon
+module github.com/DEBANMC/valve-rcon
 
 go 1.13
 
