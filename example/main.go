@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	rcon "github.com/crossworth/valve-rcon"
+	rcon "github.com/DEBANMC/valve-rcon"
 )
 
 const (
