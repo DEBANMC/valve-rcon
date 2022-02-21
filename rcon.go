@@ -10,8 +10,6 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
-
-	"github.com/df-mc/dragonfly/server"
 )
 
 // RCON implementation based on: https://developer.valvesoftware.com/wiki/Source_RCON_Protocol
@@ -55,7 +53,7 @@ func (r *RCON) addressInBanList(addr string) bool {
 	return false
 }
 
-func (r *RCON) ListenAndServe(srv *server.Server) error {
+func (r *RCON) ListenAndServe() error {
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", r.host, r.port))
 	if err != nil {
 		return err
@@ -83,13 +81,13 @@ func (r *RCON) ListenAndServe(srv *server.Server) error {
 		}
 
 		log.Printf("new connection from %s\n", conn.RemoteAddr().String())
-		go r.acceptConnection(conn, srv)
+		go r.acceptConnection(conn)
 	}
 
 	return nil
 }
 
-func (r *RCON) acceptConnection(conn net.Conn, srv *server.Server) {
+func (r *RCON) acceptConnection(conn net.Conn) {
 	authenticated := false
 
 	for {
