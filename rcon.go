@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -61,26 +60,20 @@ func (r *RCON) ListenAndServe() error {
 	r.listener = l
 	defer r.listener.Close()
 
-	log.Printf("starting RCON server on port %d\n", r.port)
-
 	for {
 
 		conn, err := r.listener.Accept()
 		if err != nil {
-			//log.Printf("could not accept connection, error %v\n", err)
-			log.Printf("RCON close")
 			break
 		}
 
 		ip := addressWithoutPort(conn.RemoteAddr().String())
 
 		if r.addressInBanList(ip) {
-			log.Printf("address %s present in ban list, dropping\n", ip)
 			_ = conn.Close()
 			continue
 		}
 
-		log.Printf("new connection from %s\n", conn.RemoteAddr().String())
 		go r.acceptConnection(conn)
 	}
 
@@ -94,13 +87,11 @@ func (r *RCON) acceptConnection(conn net.Conn) {
 
 		p, err := ParsePacket(conn)
 		if errors.Is(err, io.EOF) {
-			log.Printf("%s: connection closed\n", conn.RemoteAddr().String())
 			_ = conn.Close()
 			break
 		}
 
 		if err != nil {
-			log.Printf("%s: could not read packet, %v\n", conn.RemoteAddr().String(), err)
 			continue
 		}
 
@@ -114,14 +105,12 @@ func (r *RCON) acceptConnection(conn net.Conn) {
 
 		// not authenticated and not a ServerDataAuth packet
 		if p.Type != ServerDataAuth {
-			log.Printf("%s: got wrong packet type, expected ServerDataAuth, got %s\n", conn.RemoteAddr().String(), p.Type.Stringer())
 			_ = conn.Close()
 			break
 		}
 
 		// empty password, we should refuse the connection
 		if p.Type == ServerDataAuth && r.password == "" {
-			log.Printf("%s: RCON password not set, refusing connection\n", conn.RemoteAddr().String())
 			_ = conn.Close()
 			break
 		}
@@ -141,17 +130,13 @@ func (r *RCON) acceptConnection(conn net.Conn) {
 
 			if correct {
 				authenticated = true
-				log.Printf("%s: connection authenticated with password\n", conn.RemoteAddr().String())
 			} else {
-				log.Printf("%s: wrong password provided (%s)\n", p.Body, conn.RemoteAddr().String())
 				_ = conn.Close()
 				break
 			}
 
 			continue
 		}
-
-		panic("wrong implementation, should not reach this point")
 	}
 }
 
