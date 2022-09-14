@@ -94,7 +94,6 @@ func (r *RCON) acceptConnection(conn net.Conn) {
 
 		p, err := ParsePacket(conn)
 		if errors.Is(err, io.EOF) ||
-			errors.Is(err, syscall.WSAECONNRESET) {
 			log.Printf("%s: connection closed\n", conn.RemoteAddr().String())
 			_ = conn.Close()
 			break
